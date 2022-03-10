@@ -2,54 +2,20 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { useEffect, useState } from 'react'
-import { xcubeTokenAbi, saleNftTokenAbi, xcubeTokenAddress, saleNftTokenAddress } from '../src/ethereum-env'
-import { Button, InputGroup, FormControl, Form  } from 'react-bootstrap'
+import { Button, Card, Stack, Form  } from 'react-bootstrap'
 
-let Web3 = require('web3')
-
-
-
-export default function MyNft() {
-  const [web3, setWeb3] = useState(null)
-  const [xcubeTokenContract, setXcubeTokenContract] = useState(null)
-  const [saleNftTokenContract, setSaleNftTokenContract] = useState(null)
-
-  const [wallet, setWallet] = useState('');
+export default function MyNft({ wallet, xcubeTokenContract, xcubeTokenAddress }) {
   const [myNftTokens, setMyNftTokens] = useState([]);
   const [tokenId, setTokenId] = useState(0);
-
   const [nftPrice, setNftPrice] = useState(0);
   const [tokenURI, setTokenURI] = useState('');
 
-  const getWallet = async () => {
-    try {
-      if (window.ethereum) {
-        const wallets = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-
-        setWallet(wallets[0]);
-        let w3 = new Web3(window.ethereum)
-        w3.eth.handleRevert = true
-        setWeb3(w3)
-
-        let x = new w3.eth.Contract(xcubeTokenAbi, xcubeTokenAddress)
-        setXcubeTokenContract(x)
-
-        let s = new w3.eth.Contract(saleNftTokenAbi, saleNftTokenAddress)
-        setSaleNftTokenContract(s)
-      } else {
-        alert('you must install metamask')
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  
 
   const getIsApprovedForAll = async () => {
     try {
       const response = await xcubeTokenContract.methods
-        .isApprovedForAll(wallet, saleNftTokenAddress)
+        .isApprovedForAll(wallet, xcubeTokenAddress)
         .call();
 
       console.log(response)
@@ -59,14 +25,12 @@ export default function MyNft() {
   };
 
   useEffect(() => {
-    getWallet();
     //getIsApprovedForAll();
   }, [wallet]);
 
   const getNFTTokens = async () => {
     try {
       if (!wallet) return;
-      if (!web3) return;
       if (!xcubeTokenContract) return;
       
       const balanceLength = await xcubeTokenContract.methods.balanceOf(wallet).call();
@@ -74,13 +38,12 @@ export default function MyNft() {
 
       if (balanceLength === "0") return;
       console.log(wallet)
-
       
-      //const result = await xcubeTokenContract.methods.getNFTTokens(wallet).call();
-      const result = await xcubeTokenContract.methods.getSaleOnNfts().call();
+      const result = await xcubeTokenContract.methods.getNFTTokens(wallet).call();
+      //const result = await xcubeTokenContract.methods.getSaleOnNfts().call();
       console.log(result)
        
-      
+      setMyNftTokens(result)
       // if (response.status) {
         
       //   response.map(v => {
@@ -98,7 +61,7 @@ export default function MyNft() {
       if (!wallet) return;
 
       const response = await xcubeTokenContract.methods
-        .setApprovalForAll(saleNftTokenAddress, true)
+        .setApprovalForAll(xcubeTokenAddress, true)
         .send({ from: wallet });
     } catch (error) {
       console.error(error);
@@ -114,6 +77,32 @@ export default function MyNft() {
       </Head>
 
       <main className={styles.main}>
+      <Stack direction="horizontal" gap={3}>
+        {myNftTokens.map(v => {
+          return(
+            <div className="bg-light border">
+              <Card style={{ width: '18rem' }}>
+                {/*https://ipfs.io/ipfs/QmSRf8Y2dVK7WbLVzJwLggnG5uxrFx1Fmz35HGatjUeVW5*/}
+              <img
+      src={v.tokenURI}
+      className='img-thumbnail'
+      alt='...'
+      style={{ maxWidth: '24rem' }}
+    />
+
+              <Card.Body>
+                <Card.Title>{v.tokenId}</Card.Title>
+                <Card.Text>
+                {v.tokenURI}
+                </Card.Text>
+                <Button variant="primary">Go somewhere</Button>
+              </Card.Body>
+              </Card>
+          </div>
+          )
+        })}
+      </Stack>
+      
       <Button onClick={getNFTTokens}>get MyNfts</Button>
       <br></br>
       <Button onClick={getIsApprovedForAll}>get Approval</Button>
@@ -122,18 +111,6 @@ export default function MyNft() {
 
       </main>
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
   )
 }

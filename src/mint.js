@@ -2,58 +2,18 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { useEffect, useState } from 'react'
-import { xcubeTokenAbi, saleNftTokenAbi, xcubeTokenAddress, saleNftTokenAddress } from '../src/ethereum-env'
 import { Button, InputGroup, FormControl, Form  } from 'react-bootstrap'
 
-let Web3 = require('web3')
 
-
-
-export default function Mint() {
-  const [web3, setWeb3] = useState(null)
-  const [xcubeTokenContract, setXcubeTokenContract] = useState(null)
-  const [saleNftTokenContract, setSaleNftTokenContract] = useState(null)
-
-  const [wallet, setWallet] = useState('');
-  const [balance, setBalance] = useState(0);
-  const [tokenId, setTokenId] = useState(0);
-
+export default function Mint({wallet, xcubeTokenContract}) {
   const [nftPrice, setNftPrice] = useState(0);
   const [tokenURI, setTokenURI] = useState('');
+  const [tokenId, setTokenId] = useState('');
 
-  const getWallet = async () => {
-    try {
-      if (window.ethereum) {
-        const wallets = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-
-        setWallet(wallets[0]);
-        let w3 = new Web3(window.ethereum)
-        setWeb3(w3)
-
-        let x = new w3.eth.Contract(xcubeTokenAbi, xcubeTokenAddress)
-        setXcubeTokenContract(x)
-
-        let s = new w3.eth.Contract(saleNftTokenAbi, saleNftTokenAddress)
-        setSaleNftTokenContract(s)
-      } else {
-        alert('you must install metamask')
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    getWallet();
-    console.log(wallet)
-  }, [wallet]);
 
   const onClickMint = async () => {
     try {
       if (!wallet) return;
-      if (!web3) return;
       if (!xcubeTokenContract) return;
       if (nftPrice <= 0 || tokenURI === '') {
         alert('input price and tokenURI')
@@ -67,7 +27,6 @@ export default function Mint() {
         .send({ from : wallet, value : nftPrice });
       
       if (response.status) {
-        console.log('it true')
         const balanceLength = await xcubeTokenContract.methods
           .balanceOf(wallet)
           .call();
@@ -78,9 +37,9 @@ export default function Mint() {
           .tokenOfOwnerByIndex(wallet, parseInt(balanceLength, 10) - 1)
           .call();
 
-          setBalance(balanceLength);
           setTokenId(tokenId);
-          
+        
+        alert('success mint : ' + tokenId)
       }
       
     } catch (error) {
@@ -111,19 +70,6 @@ export default function Mint() {
       </InputGroup>
         <Button onClick={() => onClickMint()}>mint</Button>
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
   )
 }
