@@ -679,4 +679,8 @@ export const saleNftTokenAbi = [
 ];
 
 export const xcubeTokenAddress = '0xc678aE16238fc82d70581daF9a37B0f45080Dbf5';
-export const saleNftTokenAddress = '0xd7C1a953328DF7Ab72EC8f9338C6EDBC9Ad57CAa';
+export const saleNftTokenAddress = '0x7b64351bb38054A637aa5b564Cc65036a6Cb29C6';
+
+//admin 0x8a96333BD0dD626BF665c1cFbDf56c0374f2F1BE
+//seller 0x6D4537daD568D019B08f9AFEe25db6232Da99660
+//buyer 0x8d09236F4CA8A856F368b007E6d766Bf0f3f0Be4
