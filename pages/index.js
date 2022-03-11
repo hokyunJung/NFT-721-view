@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import {Form} from 'react-bootstrap'
 import Mint from '../src/mint'
 import Mynft from '../src/mynft'
+import Upload from '../src/upload'
 import { xcubeTokenAbi, saleNftTokenAbi, xcubeTokenAddress, saleNftTokenAddress } from '../src/ethereum-env'
 
 let Web3 = require('web3')
@@ -69,12 +70,13 @@ export default function Home() {
       <main className={styles.main}>
         <Form.Select aria-label="Default select example" onChange={e => setMenu(e.target.value)}>
           <option>Open this select menu</option>
+          <option value="upload">upload to pinata</option>
           <option value="mint">mint</option>
           <option value="mynft">mynft</option>
-          <option value="3">Three</option>
         </Form.Select>
         {menu === 'mint' ? <Mint wallet={wallet} xcubeTokenContract={xcubeTokenContract} /> : null}
         {menu === 'mynft' ? <Mynft wallet={wallet} xcubeTokenContract={xcubeTokenContract} xcubeTokenAddress={xcubeTokenAddress}/> : null}
+        {menu === 'upload' ? <Upload /> : null}
       </main>
 
       <footer className={styles.footer}>
