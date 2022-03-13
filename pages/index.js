@@ -36,8 +36,15 @@ export default function Home() {
         .saleNftToken()
         .call();
 
+        console.log(' saleNftToken address : ' + response)
+
         if (w3.utils.isAddress(response) === true && response === '0x0000000000000000000000000000000000000000') {
           alert('you must set saleNftToken')
+          const result = await x.methods.setSaleNftToken(saleNftTokenAddress).send({from : wallets[0]});
+          console.log(result)
+        }
+
+        if (saleNftTokenAddress != response) {
           const result = await x.methods.setSaleNftToken(saleNftTokenAddress).send({from : wallets[0]});
           console.log(result)
         }
@@ -75,7 +82,7 @@ export default function Home() {
           <option value="mynft">mynft</option>
         </Form.Select>
         {menu === 'mint' ? <Mint wallet={wallet} xcubeTokenContract={xcubeTokenContract} /> : null}
-        {menu === 'mynft' ? <Mynft wallet={wallet} xcubeTokenContract={xcubeTokenContract} xcubeTokenAddress={xcubeTokenAddress}/> : null}
+        {menu === 'mynft' ? <Mynft wallet={wallet} xcubeTokenContract={xcubeTokenContract} xcubeTokenAddress={xcubeTokenAddress} saleNftTokenContract={saleNftTokenContract} web3={web3}/> : null}
         {menu === 'upload' ? <Upload /> : null}
       </main>
 
