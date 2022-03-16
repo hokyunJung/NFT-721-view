@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { Button, InputGroup, FormControl, Form  } from 'react-bootstrap'
 
 
-export default function Mint({wallet, xcubeTokenContract}) {
+export default function Mint({wallet, xcubeTokenContract, web3}) {
   const [nftPrice, setNftPrice] = useState(0);
   const [tokenURI, setTokenURI] = useState('');
   const [tokenId, setTokenId] = useState('');
@@ -20,11 +20,11 @@ export default function Mint({wallet, xcubeTokenContract}) {
         return;
       }
 
-      console.log(tokenURI + ' / ' + nftPrice)
+      console.log(tokenURI + ' / ' + web3.utils.toWei(nftPrice, "milliether"))
 
       const response = await xcubeTokenContract.methods
         .mintNFT(tokenURI)
-        .send({ from : wallet, value : nftPrice });
+        .send({ from : wallet, value : web3.utils.toWei(nftPrice, "milliether") });
       
       if (response.status) {
         const balanceLength = await xcubeTokenContract.methods
@@ -41,6 +41,7 @@ export default function Mint({wallet, xcubeTokenContract}) {
         
         alert('success mint : ' + tokenId)
       }
+
       
     } catch (error) {
       console.error(error);
@@ -59,14 +60,13 @@ export default function Mint({wallet, xcubeTokenContract}) {
       <Form.Label htmlFor="basic-url">enter tokenURI</Form.Label>
       <InputGroup className="mb-3">
         <InputGroup.Text id="basic-addon3">
-          https://ipfs.io/ipfs/QmdTG3ZZxZEnCAswaAYjM4tMEsPCjWdc9917NdNjVfuY5e
+          ipfs://QmdTG3ZZxZEnCAswaAYjM4tMEsPCjWdc9917NdNjVfuY5e
         </InputGroup.Text>
         <FormControl id="basic-url" aria-describedby="basic-addon3" value={tokenURI} onChange={e => setTokenURI(e.target.value)} />
       </InputGroup>
       <InputGroup className="mb-3">
-        <InputGroup.Text>Ether</InputGroup.Text>
+        <InputGroup.Text>milliether</InputGroup.Text>
         <FormControl aria-label="Amount (to the nearest Ether)" value={nftPrice} onChange={e => setNftPrice(e.target.value)}/>
-        <InputGroup.Text>.00</InputGroup.Text>
       </InputGroup>
         <Button onClick={() => onClickMint()}>mint</Button>
       </main>

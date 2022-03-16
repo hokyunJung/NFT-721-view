@@ -6,6 +6,7 @@ import {Form} from 'react-bootstrap'
 import Mint from '../src/mint'
 import Mynft from '../src/mynft'
 import Upload from '../src/upload'
+import OnSale from '../src/onsale'
 import { xcubeTokenAbi, saleNftTokenAbi, xcubeTokenAddress, saleNftTokenAddress } from '../src/ethereum-env'
 
 let Web3 = require('web3')
@@ -80,10 +81,12 @@ export default function Home() {
           <option value="upload">upload to pinata</option>
           <option value="mint">mint</option>
           <option value="mynft">mynft</option>
+          <option value="onsale">onsale</option>
         </Form.Select>
-        {menu === 'mint' ? <Mint wallet={wallet} xcubeTokenContract={xcubeTokenContract} /> : null}
-        {menu === 'mynft' ? <Mynft wallet={wallet} xcubeTokenContract={xcubeTokenContract} xcubeTokenAddress={xcubeTokenAddress} saleNftTokenContract={saleNftTokenContract} web3={web3}/> : null}
+        {menu === 'mint' ? <Mint wallet={wallet} xcubeTokenContract={xcubeTokenContract} web3={web3}/> : null}
+        {menu === 'mynft' ? <Mynft wallet={wallet} xcubeTokenContract={xcubeTokenContract} xcubeTokenAddress={xcubeTokenAddress} saleNftTokenContract={saleNftTokenContract} saleNftTokenAddress={saleNftTokenAddress} web3={web3}/> : null}
         {menu === 'upload' ? <Upload /> : null}
+        {menu === 'onsale' ? <OnSale wallet={wallet} xcubeTokenContract={xcubeTokenContract} xcubeTokenAddress={xcubeTokenAddress} saleNftTokenContract={saleNftTokenContract} saleNftTokenAddress={saleNftTokenAddress} web3={web3}/> : null}
       </main>
 
       <footer className={styles.footer}>

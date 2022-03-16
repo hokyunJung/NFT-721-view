@@ -4,55 +4,32 @@ import styles from '../styles/Home.module.css'
 import { useEffect, useState } from 'react'
 import { Button, Card, Stack, Modal, InputGroup, FormControl   } from 'react-bootstrap'
 
-export default function MyNft({ wallet, xcubeTokenContract, xcubeTokenAddress, saleNftTokenContract, saleNftTokenAddress, web3 }) {
+export default function OnSale({ wallet, xcubeTokenContract, xcubeTokenAddress, saleNftTokenContract, saleNftTokenAddress, web3 }) {
   const [myNftTokens, setMyNftTokens] = useState([]);
   const [list, setList] = useState();
   const [tokenId, setTokenId] = useState(0);
   const [nftPrice, setNftPrice] = useState(0);
   const [tokenURI, setTokenURI] = useState('');
   const [show, setShow] = useState(false);
-  const [isApprove, setIsApprove] = useState(false);
-
+  
   const handleClose = () => setShow(false)
   const handleShow = (tokenId) => {
     setTokenId(tokenId)
     setShow(true)
   }
 
-  const getIsApprovedForAll = async () => {
-    try {
-      const response = await xcubeTokenContract.methods
-        .isApprovedForAll(wallet, saleNftTokenAddress)
-        .call();
-
-      console.log(response)
-      setIsApprove(response)
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   useEffect(() => {
     getList()
-  }, [myNftTokens, isApprove]);
+  }, [myNftTokens]);
 
-  const getNFTTokens = async () => {
+  const getOnSaleNFT = async () => {
+
+
     try {
       if (!wallet) return;
       if (!xcubeTokenContract) return;
-      
-      const balanceLength = await xcubeTokenContract.methods.balanceOf(wallet).call();
-      console.log(balanceLength)
-
-      if (balanceLength === "0") return;
-      console.log(wallet)
-      
-      const result = await xcubeTokenContract.methods.getNFTTokens(wallet).call();
-      //const result = await xcubeTokenContract.methods.getSaleOnNfts().call();
-      console.log(result)
-       
-      setMyNftTokens(result)
-      
+      const response = await xcubeTokenContract.methods.getSaleOnNfts().call();
+      setMyNftTokens(response)
     } catch (error) {
       console.error(error);
     }
@@ -60,23 +37,8 @@ export default function MyNft({ wallet, xcubeTokenContract, xcubeTokenAddress, s
     
   };
 
-  const setIsApprovedForAll = async () => {
-    try {
-      if (!wallet) return;
-
-      const response = await xcubeTokenContract.methods
-        .setApprovalForAll(saleNftTokenAddress, !isApprove)
-        .send({ from: wallet });
-      
-      setIsApprove(!isApprove)
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const fetchMetadata = async (ipfs) => {
-    //const response = await fetch('https://ipfs.io/ipfs/' + ipfs)
-    const response = await fetch('https://gateway.pinata.cloud/ipfs/' + ipfs)
+    const response = await fetch('https://ipfs.io/ipfs/' + ipfs)
     if(!response.ok) {
       throw new Error(response.statusText);
     }
@@ -102,9 +64,7 @@ export default function MyNft({ wallet, xcubeTokenContract, xcubeTokenAddress, s
         if (v.tokenURI === undefined) return
 
         let ttt = await fetchMetadata(v.tokenURI.replace('ipfs://', ''))
-        //let imgURI = 'https://ipfs.io/ipfs/' + ttt
-        let imgURI = 'https://gateway.pinata.cloud/ipfs/' + ttt
-        
+        let imgURI = 'https://ipfs.io/ipfs/' + ttt
         console.log(imgURI)
 
         if(imgURI != undefined) {
@@ -120,12 +80,13 @@ export default function MyNft({ wallet, xcubeTokenContract, xcubeTokenAddress, s
               />
   
               <Card.Body>
-                <Card.Title>{v.tokenId}</Card.Title>
+                <Card.Title>owner : {v.tokenOwner}</Card.Title>
                 <Card.Text>
-                {v.tokenURI}
+                uriToken : {v.tokenURI}
+                <br></br>
+                buy price : {web3.utils.fromWei(v.nftPrice, "milliether")}
                 </Card.Text>
-                {isApprove ? <Button variant="primary" onClick={() => handleShow(v.tokenId)}>sall</Button> : null}
-                
+                {wallet.toLowerCase() === v.tokenOwner.toLowerCase() ? null : <Button variant="primary" onClick={() => handleShow(v.tokenId)}>buy</Button>} 
               </Card.Body>
               </Card>
           </div>
@@ -137,22 +98,22 @@ export default function MyNft({ wallet, xcubeTokenContract, xcubeTokenAddress, s
     setList(sss)
   }
 
-  const sellNft = async () => {
+  const buyNft = async () => {
     try {
       //if (!wallet || !saleStatus) return;
       if (!wallet || !tokenId || nftPrice < 0) return;
-      console.log(tokenId + ' / ' + nftPrice)
+      console.log(tokenId + ' / ' + web3.utils.toWei(nftPrice, "milliether"))
 
       
       const response = await saleNftTokenContract.methods
-        .setForSaleNftToken(
-          tokenId,
-          web3.utils.toWei(nftPrice, "milliether")
+        .purchaseNftToken(
+          tokenId
         )
-        .send({ from: wallet });
+        .send({ from: wallet, value: web3.utils.toWei(nftPrice, "milliether") });
 
       if (response.status) {
-        setNftPrice(web3.utils.toWei(nftPrice, "milliether"));
+        console.log(response)
+        alert('success')
       }
       
     } catch (error) {
@@ -172,28 +133,24 @@ export default function MyNft({ wallet, xcubeTokenContract, xcubeTokenAddress, s
       <Stack direction="horizontal" gap={3}>
         {list}
       </Stack>
-      <Button onClick={getNFTTokens}>get MyNfts</Button>
-      <br></br>
-      <Button onClick={getIsApprovedForAll}>isApproval</Button>
-      <br></br>
-      <Button onClick={setIsApprovedForAll}>toggleApproval</Button>
-
+      <Button onClick={getOnSaleNFT}>get OnSale</Button>
+      
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>sale NFT</Modal.Title>
+          <Modal.Title>buy NFT</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <InputGroup className="mb-3">
-            <InputGroup.Text>milliether</InputGroup.Text>
-            <FormControl aria-label="milliether" value={nftPrice} onChange={(e) => {setNftPrice(e.target.value)}}/>
+            <InputGroup.Text>eth</InputGroup.Text>
+            <FormControl aria-label="ehter" value={nftPrice} onChange={(e) => {setNftPrice(e.target.value)}}/>
           </InputGroup>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             close
           </Button>
-          <Button variant="primary" onClick={sellNft}>
-            sall
+          <Button variant="primary" onClick={buyNft}>
+            buy
           </Button>
         </Modal.Footer>
       </Modal>

@@ -89,7 +89,8 @@ export default function Upload() {
             //  render the hash
             imgHash.length > 0 && <img height='200' src={`https://gateway.pinata.cloud/ipfs/${imgHash}`} alt='not loading'/>
           }
-          <Button onClick={()=>handleJsonFile()}>test Json</Button>
+          <br></br>
+          {metadataHash != '' ? 'you can mint : ' + metadataHash : null}
         </div>
       </main>
     </div>
